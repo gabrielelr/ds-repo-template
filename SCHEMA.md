@@ -17,6 +17,7 @@ components/
         ├── purpose-usage.md       Obbligatorio
         ├── behavior.md            Obbligatorio
         ├── rationale-note.md      Obbligatorio
+        ├── changelog.md           Obbligatorio (sincronizzato da Changelog Master)
         ├── metadata.json          Obbligatorio
         └── images/                Obbligatoria, può essere vuota
             └── *.png
@@ -25,9 +26,10 @@ components/
 **Regole.**
 
 - I nomi dei file sono fissi e case-sensitive: `purpose-usage.md`, non `purpose.md` né `Purpose-Usage.md`.
-- Tutti e quattro i file (tre Markdown + un JSON) esistono sempre, anche per i componenti in stato `scaffold`.
+- Tutti i file (quattro Markdown + un JSON) esistono sempre, anche per i componenti in stato `scaffold`.
 - La cartella `images/` esiste sempre. Se vuota, contiene un file `.gitkeep` per essere versionata da Git.
 - Niente sottocartelle dentro `docs/` oltre a `images/`.
+- Il file `changelog.md` non viene mai modificato a mano: è sincronizzato automaticamente dal plugin Changelog Master di Figma (vedi sezione 5).
 
 **File aggiuntivi consentiti** (non gestiti dagli script automatici, ma utili al team):
 
@@ -175,7 +177,59 @@ Risponde alle domande: *"Perché è progettato in questo modo? Quali decisioni d
 
 ---
 
-## 5. Struttura del `metadata.json`
+## 5. `changelog.md` — Storico delle modifiche del componente
+
+Il file `changelog.md` traccia l'evoluzione del componente nel tempo: nuove varianti, modifiche comportamentali, fix, deprecazioni. È sincronizzato automaticamente dal plugin **Changelog Master** di Figma e non va mai modificato a mano.
+
+**Workflow di aggiornamento.**
+
+1. Il team DS modifica il componente direttamente in Figma (nuova variante, modifica di proprietà, deprecazione)
+2. All'interno del plugin Changelog Master, il team DS registra la modifica con descrizione e tipo di cambiamento
+3. Il plugin commit-a in automatico l'aggiornamento al file `components/{slug}/docs/changelog.md` della repo, in append rispetto allo storico precedente
+4. Eventuali documenti correlati (`purpose-usage.md`, `behavior.md`, `metadata.json`) vanno aggiornati a mano dal team UX se la modifica impatta la documentazione
+
+**Formato del file.**
+
+Il plugin produce un Markdown con struttura standard. Esempio di output:
+
+```markdown
+# Changelog — Button
+
+## [1.2.0] — 2026-04-15
+
+### Aggiunto
+- Variante `tertiary` per azioni di basso contrasto
+
+### Modificato
+- Padding orizzontale aumentato da 12px a 16px su size `large`
+
+## [1.1.0] — 2026-02-03
+
+### Aggiunto
+- Stato `loading` con spinner integrato
+
+### Deprecato
+- Variante `ghost` (sostituita da `tertiary` nella prossima minor)
+```
+
+**Regole.**
+
+- La struttura del file segue le convenzioni di [Keep a Changelog](https://keepachangelog.com): le sezioni standard sono `Aggiunto`, `Modificato`, `Deprecato`, `Rimosso`, `Risolto`, `Sicurezza`.
+- Le entry sono ordinate in ordine cronologico inverso (la più recente in alto).
+- Ogni entry ha una versione semver e una data ISO `YYYY-MM-DD`.
+- Il file viene letto dagli strumenti automatici per:
+  - Aggiornare il campo `version` e `lastUpdated` nei `metadata.json` quando rileva un nuovo cambiamento
+  - Fornire contesto storico all'LLM nella modalità Chiedi (es. *"questa variante esiste da febbraio 2026"*)
+
+**Cosa NON va nel changelog.**
+
+- Modifiche alla documentazione (typo, riformulazioni): vanno tracciate dai commit Git della repo, non dal changelog
+- Cambiamenti di solo layout in Figma che non modificano il comportamento o le proprietà del componente
+- Esperimenti o varianti in working session non promosse nel DS ufficiale
+
+---
+
+## 6. Struttura del `metadata.json`
 
 Il `metadata.json` è la versione strutturata della stessa informazione contenuta nei Markdown. È quello che alimenta il sistema di check di aderenza e che viene caricato dall'LLM quando deve dare risposte precise sulle regole.
 
@@ -298,7 +352,7 @@ Il `metadata.json` è la versione strutturata della stessa informazione contenut
 
 ---
 
-## 6. Naming delle immagini
+## 7. Naming delle immagini
 
 Le immagini in `components/{slug}/docs/images/` seguono un naming convenzionale che permette agli script di identificarle automaticamente.
 
@@ -335,7 +389,7 @@ modal-confirmation-dont-2.png → Modal variante confirmation, anti-pattern #2
 
 ---
 
-## 7. File a livello di repo
+## 8. File a livello di repo
 
 Oltre alle cartelle dei singoli componenti, la repo contiene questi file alla radice:
 
@@ -352,16 +406,17 @@ Oltre alle cartelle dei singoli componenti, la repo contiene questi file alla ra
 
 ---
 
-## 8. Stato `scaffold` vs `full`
+## 9. Stato `scaffold` vs `full`
 
 Un componente in stato `scaffold` ha la struttura prevista dallo schema ma il contenuto è incompleto. Serve a tracciare nell'inventario quali componenti sono ancora da documentare in profondità.
 
 **Cosa deve esserci in un componente `scaffold`.**
 
-- Tutte e quattro le file (Markdown + JSON) esistono
-- Il frontmatter dei Markdown è compilato (slug, section, component, lastUpdated, `status: scaffold`)
-- I Markdown contengono almeno un titolo H1 e i nomi delle sezioni previste, con commenti `<!-- TODO: ... -->` per indicare cosa manca
+- Tutti i file (Markdown + JSON) esistono
+- Il frontmatter dei tre Markdown principali è compilato (slug, section, component, lastUpdated, `status: scaffold`)
+- I tre Markdown principali contengono almeno un titolo H1 e i nomi delle sezioni previste, con commenti `<!-- TODO: ... -->` per indicare cosa manca
 - Il `metadata.json` contiene i campi obbligatori a livello root (`component`, `slug`, `version`, `lastUpdated`, `status: scaffold`) e gli array `useCases` e `antiPatterns` vuoti
+- Il `changelog.md` può essere vuoto o contenere una entry iniziale `## [0.1.0] — {data} — Componente creato`
 
 **Cosa deve esserci in più in un componente `full`.**
 
@@ -382,7 +437,7 @@ Quando un componente viene completato:
 
 ---
 
-## 9. Versioning dello schema
+## 10. Versioning dello schema
 
 Questo schema può evolvere. Quando viene modificato in modo non retrocompatibile (campi obbligatori aggiunti, campi rinominati, struttura cambiata), va incrementata la versione dello schema e va comunicata la modifica.
 
