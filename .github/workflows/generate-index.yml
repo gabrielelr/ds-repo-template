@@ -1,0 +1,40 @@
+name: Generate index
+
+# Quando si attiva questo workflow
+on:
+  # A ogni push su main
+  push:
+    branches:
+      - main
+    # Si attiva solo se sono cambiati file rilevanti
+    paths:
+      - 'components/**'
+      - '.github/workflows/generate-index.yml'
+  # Permette di lanciare il workflow manualmente
+  workflow_dispatch:
+
+jobs:
+  generate-index-dry-run:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Scarica il codice della repo nell'ambiente della Action
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      # 2. Setup Node.js (versione 20 LTS)
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # 3. Genera l'index.json e lo stampa nei log
+      - name: Generate index (dry-run)
+        run: node .github/scripts/generate-index.js
+
+      # 4. Riepilogo finale
+      - name: Summary
+        run: |
+          echo "Workflow eseguito in modalità dry-run."
+          echo "L'index.json NON è stato committato. Vedi i log dello step precedente per il contenuto."
+          echo "Per attivare la scrittura su file, aggiornare il workflow al task 22 della checklist."
