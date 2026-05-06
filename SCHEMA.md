@@ -184,41 +184,56 @@ Il file `changelog.md` traccia l'evoluzione del componente nel tempo: nuove vari
 **Workflow di aggiornamento.**
 
 1. Il team DS modifica il componente direttamente in Figma (nuova variante, modifica di proprietà, deprecazione)
-2. All'interno del plugin Changelog Master, il team DS registra la modifica con descrizione e tipo di cambiamento
-3. Il plugin commit-a in automatico l'aggiornamento al file `components/{slug}/docs/changelog.md` della repo, in append rispetto allo storico precedente
-4. Eventuali documenti correlati (`purpose-usage.md`, `behavior.md`, `metadata.json`) vanno aggiornati a mano dal team UX se la modifica impatta la documentazione
+2. All'interno del plugin Changelog Master, il team DS registra la modifica indicando tipo, descrizione, autore ed eventuale progetto/revisore
+3. La modifica entra nella **Sync Queue** del plugin, dove può essere ancora corretta o cancellata prima dell'invio
+4. Al sync, il plugin scrive l'aggiornamento al file `components/{slug}/docs/changelog.md` della repo, in append rispetto allo storico precedente, e aggiorna il campo `last_updated` del frontmatter
+5. Eventuali documenti correlati (`purpose-usage.md`, `behavior.md`, `metadata.json`) vanno aggiornati a mano dal team UX se la modifica impatta la documentazione
+
+Il path template del plugin è configurabile dalle impostazioni; per questa repo è `components/{component}/docs/changelog.md`, dove `{component}` viene risolto sostituendo lo slug del frame Figma (es. `"Icon Button"` → `"icon-button"`).
 
 **Formato del file.**
 
-Il plugin produce un Markdown con struttura standard. Esempio di output:
+Il file inizia con un frontmatter YAML che identifica il componente, seguito da un'entry per ogni data in cui sono state registrate modifiche. Le entry sono raggruppate sotto un heading data nel formato `### DD/MM/YYYY` e ordinate cronologicamente in ordine inverso (la più recente in alto). Esempio reale prodotto dal plugin:
 
 ```markdown
-# Changelog — Button
+---
+component: Checkbox
+figma_id: ""
+last_updated: 2026-04-27
+---
 
-## [1.2.0] — 2026-04-15
-
-### Aggiunto
-- Variante `tertiary` per azioni di basso contrasto
-
-### Modificato
-- Padding orizzontale aumentato da 12px a 16px su size `large`
-
-## [1.1.0] — 2026-02-03
-
-### Aggiunto
-- Stato `loading` con spinner integrato
-
-### Deprecato
-- Variante `ghost` (sostituita da `tertiary` nella prossima minor)
+### 27/04/2026
+- **Updated** · Aggiunto lo stato error disabled in quanto questa casistica capita in Full responsive durante la selezione delle scommesse — *Gabriele La Rosa* · Alessandra Saccani
+- **New** · Il componente è stato aggiunto al design system — *Gabriele La Rosa*
 ```
+
+**Frontmatter.**
+
+| Campo          | Tipo   | Note                                                                                |
+|----------------|--------|-------------------------------------------------------------------------------------|
+| `component`    | string | Nome leggibile del componente                                                       |
+| `figma_id`     | string | ID del nodo Figma associato (può essere stringa vuota se non risolto)               |
+| `last_updated` | string | Data ISO `YYYY-MM-DD` dell'ultima entry registrata; aggiornata in automatico al sync |
+
+**Formato di una entry.**
+
+```
+- **{Tipo}** · {descrizione} — *{autore}* · {progetto}
+```
+
+- `{Tipo}` — categoria della modifica scelta nel plugin (es. `New`, `Updated`); la lista esatta dipende dalla versione del plugin Changelog Master
+- `{descrizione}` — testo libero che spiega cosa è cambiato e perché
+- `{autore}` — chi ha effettuato la modifica in Figma (auto-compilato dal plugin con `figma.currentUser.name`), in corsivo
+- `{progetto}` — opzionale, separato da `·`; reso opzionale dal flag "Fix team DS" del plugin per modifiche interne di manutenzione
 
 **Regole.**
 
-- La struttura del file segue le convenzioni di [Keep a Changelog](https://keepachangelog.com): le sezioni standard sono `Aggiunto`, `Modificato`, `Deprecato`, `Rimosso`, `Risolto`, `Sicurezza`.
-- Le entry sono ordinate in ordine cronologico inverso (la più recente in alto).
-- Ogni entry ha una versione semver e una data ISO `YYYY-MM-DD`.
+- Il file è gestito esclusivamente dal plugin Changelog Master: non va mai modificato a mano, nemmeno per correggere refusi nelle entry esistenti (vanno corretti dall'edit in-place del plugin).
+- Le entry sono ordinate cronologicamente in ordine inverso (data più recente in alto).
+- Il sync per componente è indipendente: se il sync di un componente fallisce, gli altri proseguono — solo gli hash delle righe scritte con successo vengono marcati come sincronizzati.
 - Il file viene letto dagli strumenti automatici per:
-  - Aggiornare il campo `version` e `lastUpdated` nei `metadata.json` quando rileva un nuovo cambiamento
+  - Aggiornare il campo `lastUpdated` nei `metadata.json` quando rileva un nuovo cambiamento
+  - Generare il report settimanale Slack via GitHub Action (diff sui changelog modificati dall'ultimo tag `report-*`)
   - Fornire contesto storico all'LLM nella modalità Chiedi (es. *"questa variante esiste da febbraio 2026"*)
 
 **Cosa NON va nel changelog.**
@@ -416,7 +431,7 @@ Un componente in stato `scaffold` ha la struttura prevista dallo schema ma il co
 - Il frontmatter dei tre Markdown principali è compilato (slug, section, component, lastUpdated, `status: scaffold`)
 - I tre Markdown principali contengono almeno un titolo H1 e i nomi delle sezioni previste, con commenti `<!-- TODO: ... -->` per indicare cosa manca
 - Il `metadata.json` contiene i campi obbligatori a livello root (`component`, `slug`, `version`, `lastUpdated`, `status: scaffold`) e gli array `useCases` e `antiPatterns` vuoti
-- Il `changelog.md` può essere vuoto o contenere una entry iniziale `## [0.1.0] — {data} — Componente creato`
+- Il `changelog.md` contiene **solo il frontmatter YAML** (`component`, `figma_id`, `last_updated`); il plugin Changelog Master appende le entry quando il team DS registra le prime modifiche
 
 **Cosa deve esserci in più in un componente `full`.**
 
