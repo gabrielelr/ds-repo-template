@@ -1,51 +1,46 @@
 {
-  "component": "",
   "slug": "",
-  "version": "",
   "lastUpdated": "",
   "status": "scaffold",
-  "category": "",
-  "type": "",
-  "description": "",
+
+  "component": {
+    "name": "",
+    "category": "atoms",
+    "description": "",
+    "type": "interactive"
+  },
 
   "usage": {
     "useCases": [],
+    "requiredProps": [],
+    "commonPatterns": [],
     "antiPatterns": []
   },
 
-  "variants": [],
-
-  "behavior": {
-    "states": [],
-    "interactions": {
-      "tap": "",
-      "swipe": "",
-      "keyboard": ""
-    },
-    "animations": "",
-    "platforms": {
-      "mobile": [],
-      "tablet": [],
-      "desktop": []
-    },
-    "accessibility": {
-      "role": "",
-      "requiredLabel": false,
-      "keyboardSupport": [],
-      "screenReader": ""
-    }
-  },
-
   "composition": {
+    "slots": {},
     "nestedComponents": [],
     "commonPartners": [],
     "parentConstraints": []
   },
 
-  "aiHints": {
-    "contextMapping": {},
-    "commonQuestions": []
+  "behavior": {
+    "states": [],
+    "interactions": {},
+    "responsive": {}
   },
 
-  "relatedComponents": []
+  "accessibility": {
+    "role": "",
+    "keyboardSupport": "",
+    "screenReader": "",
+    "focusManagement": "",
+    "wcag": "AA"
+  },
+
+  "aiHints": {
+    "priority": "medium",
+    "keywords": [],
+    "context": ""
+  }
 }

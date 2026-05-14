@@ -187,164 +187,135 @@ last_updated: 2026-04-27
 
 Il `metadata.json` è la fonte di verità strutturata per ogni componente. Contiene tutte le informazioni su cosa è il componente, quando usarlo, come si comporta e come è composto. È quello che alimenta il sistema di check di aderenza, la generazione dell'`index.json` e il contesto caricato dall'LLM per rispondere alle domande sul DS.
 
+Lo schema del `metadata.json` segue esattamente il formato della skill **AI Component Metadata** (`skills/ai-component-metadata`), con l'aggiunta di tre campi di repo-level (`slug`, `lastUpdated`, `status`) necessari per il tooling automatico.
+
 **Schema di riferimento completo.**
 
 ```json
 {
-  "component": "Button",
   "slug": "button",
-  "version": "1.0.0",
   "lastUpdated": "2026-05-09",
   "status": "full",
-  "category": "atoms",
-  "type": "interactive",
-  "description": "Il Button è l'elemento che avvia un'azione. Si usa per confermare, inviare, proseguire o eseguire operazioni all'interno di un flusso.",
+
+  "component": {
+    "name": "Button",
+    "category": "atoms",
+    "description": "Interactive element for triggering user actions",
+    "type": "interactive"
+  },
 
   "usage": {
     "useCases": [
+      "primary-actions",
+      "form-submission",
+      "navigation-triggers",
+      "dialog-confirmations"
+    ],
+    "requiredProps": [],
+    "commonPatterns": [
       {
-        "name": "Azione primaria di una schermata",
-        "description": "Il button primary identifica l'azione principale che l'utente deve compiere in un determinato contesto.",
-        "example": "Conferma del checkout, invio di un form, prosecuzione di un flusso."
+        "name": "primary-action",
+        "description": "Azione principale di una schermata o flusso",
+        "composition": "<Button variant=\"solid_primary\"><Button.Text>Conferma</Button.Text></Button>"
+      },
+      {
+        "name": "secondary-action",
+        "description": "Azione alternativa o di annullamento",
+        "composition": "<Button variant=\"outline_default\"><Button.Text>Annulla</Button.Text></Button>"
       }
     ],
     "antiPatterns": [
       {
-        "scenario": "Più di un button primary nella stessa schermata",
-        "reason": "La gerarchia visiva si annulla e l'utente non capisce qual è l'azione primaria.",
-        "alternative": "Usare un solo primary; gli altri button diventano secondary o tertiary.",
-        "severity": "critical"
+        "scenario": "multiple-primary-buttons",
+        "reason": "Confuses user decision-making and visual hierarchy",
+        "alternative": "Use one primary button, others as secondary or tertiary"
       }
     ]
   },
 
-  "variants": [
-    {
-      "name": "primary",
-      "whenToUse": "Per l'azione principale di una schermata o di un flusso.",
-      "whenNotToUse": "Per azioni distruttive (usa la variante destructive) o secondarie (usa secondary)."
+  "composition": {
+    "slots": {
+      "Text": {
+        "required": false,
+        "description": "Button label text"
+      },
+      "Icon": {
+        "required": false,
+        "description": "Icon element for visual enhancement"
+      }
     },
-    {
-      "name": "secondary",
-      "whenToUse": "Per azioni alternative o di supporto, sempre presenti accanto a un primary.",
-      "whenNotToUse": "Da solo in una schermata: se è l'unica azione, dovrebbe essere primary."
-    }
-  ],
+    "nestedComponents": ["Button.Text", "Button.Icon"],
+    "commonPartners": ["Form", "Card", "Modal", "Dialog"],
+    "parentConstraints": []
+  },
 
   "behavior": {
-    "states": ["default", "hover", "pressed", "disabled", "focus", "loading"],
+    "states": ["default", "hover", "pressed", "focused", "disabled", "loading"],
     "interactions": {
-      "tap": "Avvia l'azione immediatamente al rilascio del tap.",
-      "swipe": "Non applicabile.",
-      "keyboard": "Enter e Space attivano l'azione; Tab sposta il focus al prossimo elemento interattivo."
+      "click": "Executes primary action",
+      "hover": "Shows interactive state",
+      "focus": "Keyboard focus indicator",
+      "space": "Activates when focused",
+      "enter": "Activates when focused"
     },
-    "animations": "Transizione di colore al cambio di stato (default → hover → pressed) in 150ms ease-out. Lo stato loading mostra uno spinner centrato nel button.",
-    "platforms": {
-      "mobile": [
-        "Touch target minimo 44x44pt",
-        "Bottom navigation: layout flex row, bottoni affiancati al 50/50"
-      ],
-      "tablet": [
-        "Touch target minimo 44x44pt",
-        "Bottom navigation: layout flex row con padding orizzontale aumentato"
-      ],
-      "desktop": [
-        "Hover state attivo",
-        "Width auto in base al contenuto, mai full-width salvo contesti specifici"
-      ]
-    },
-    "accessibility": {
-      "role": "button",
-      "requiredLabel": true,
-      "keyboardSupport": ["Enter", "Space"],
-      "screenReader": "Il testo del button deve essere autoesplicativo senza il contesto visivo. Evitare label generiche come 'Clicca qui'."
+    "responsive": {
+      "mobile": "Full width in narrow containers",
+      "tablet": "Adapts to container width",
+      "desktop": "Inline with auto width"
     }
   },
 
-  "composition": {
-    "nestedComponents": ["icon", "spinner"],
-    "commonPartners": ["button-group", "form"],
-    "parentConstraints": ["Non deve essere figlio diretto di un altro button."]
+  "accessibility": {
+    "role": "button",
+    "keyboardSupport": "Full keyboard navigation with Space/Enter activation",
+    "screenReader": "Announces button label and state",
+    "focusManagement": "Visible focus ring, follows focus order",
+    "wcag": "AA"
   },
 
   "aiHints": {
-    "contextMapping": {
-      "modal": "Usare button-group con primary + secondary",
-      "form": "Primary in fondo al form, allineato a destra su desktop"
-    },
-    "commonQuestions": [
-      "Quando uso primary vs secondary?",
-      "Posso avere due primary?",
-      "Come gestisco lo stato loading?"
-    ]
-  },
-
-  "relatedComponents": [
-    { "slug": "button-group", "relation": "compone" },
-    { "slug": "icon-button", "relation": "alternativa-a" },
-    { "slug": "link", "relation": "alternativa-a" }
-  ]
+    "priority": "high",
+    "keywords": ["button", "action", "click", "submit", "cta", "trigger"],
+    "context": "Use for any interactive action that changes state or triggers behavior"
+  }
 }
 ```
 
-**Specifica dei campi.**
+**Campi di repo-level** (non presenti nella skill, necessari per il tooling).
 
-| Campo                               | Tipo              | Obbligatorio | Note                                                                           |
-|-------------------------------------|-------------------|--------------|--------------------------------------------------------------------------------|
-| `component`                         | string            | Sì           | Nome leggibile                                                                 |
-| `slug`                              | string            | Sì           | Conforme alla sezione 2                                                        |
-| `version`                           | string            | No           | Semver                                                                         |
-| `lastUpdated`                       | string            | Sì           | ISO `YYYY-MM-DD`                                                               |
-| `status`                            | enum              | Sì           | `full` o `scaffold`                                                            |
-| `category`                          | enum              | Sì           | `atoms`, `molecules`, `organisms`                                              |
-| `type`                              | enum              | Sì           | `interactive`, `display`, `container`, `input`, `navigation`                  |
-| `description`                       | string            | Sì se `full` | Definizione del componente in 1-2 frasi. Risponde a "Cos'è?"                  |
-| `usage.useCases[]`                  | array di object   | Sì se `full` | Almeno 1 elemento per componenti `full`                                        |
-| `usage.useCases[].name`             | string            | Sì           | Titolo del caso d'uso, max 80 caratteri                                        |
-| `usage.useCases[].description`      | string            | Sì           | Descrizione discorsiva del caso d'uso                                          |
-| `usage.useCases[].example`          | string            | No           | Esempio concreto                                                               |
-| `usage.antiPatterns[]`              | array di object   | No           | Può essere vuoto, ma più ne ha più il check è efficace                         |
-| `usage.antiPatterns[].scenario`     | string            | Sì           | Descrizione della violazione                                                   |
-| `usage.antiPatterns[].reason`       | string            | Sì           | Spiegazione del perché è sbagliato                                             |
-| `usage.antiPatterns[].alternative`  | string            | Sì           | Cosa fare al suo posto                                                         |
-| `usage.antiPatterns[].severity`     | enum              | Sì           | `critical`, `warning`, `suggestion`                                            |
-| `variants[]`                        | array di object   | No           | Solo se il componente ha varianti formali                                      |
-| `variants[].name`                   | string            | Sì           | Nome della variante come definita nel DS                                       |
-| `variants[].whenToUse`              | string            | Sì           | Regola di scelta della variante                                                |
-| `variants[].whenNotToUse`           | string            | Sì           | Quando NON sceglierla                                                          |
-| `behavior.states[]`                 | array di string   | No           | Stati interattivi supportati                                                   |
-| `behavior.interactions`             | object            | No           | Chiavi: `tap`, `swipe`, `keyboard`. Testo libero che descrive il comportamento |
-| `behavior.animations`               | string            | No           | Descrizione delle transizioni e dei tempi                                      |
-| `behavior.platforms`                | object            | No           | Chiavi: `mobile`, `tablet`, `desktop`. Valori: array di regole comportamentali |
-| `behavior.accessibility`            | object            | No           | `role`, `requiredLabel`, `keyboardSupport[]`, `screenReader`                   |
-| `composition.nestedComponents[]`    | array di string   | No           | Slug dei componenti interni usati in questo componente                         |
-| `composition.commonPartners[]`      | array di string   | No           | Slug dei componenti con cui viene spesso combinato                             |
-| `composition.parentConstraints[]`   | array di string   | No           | Regole su dove questo componente può o non può essere inserito                 |
-| `aiHints.contextMapping`            | object            | No           | Mappa contesti d'uso → regole specifiche, utile al sistema di chat             |
-| `aiHints.commonQuestions[]`         | array di string   | No           | Domande tipiche, usate per migliorare il routing nelle query LLM               |
-| `relatedComponents[]`               | array di object   | No           | Link ad altri componenti                                                       |
-| `relatedComponents[].slug`          | string            | Sì           | Slug del componente correlato                                                  |
-| `relatedComponents[].relation`      | string            | Sì           | `compone`, `composto-da`, `alternativa-a`, `usato-dentro`                      |
+| Campo         | Tipo   | Obbligatorio | Note                                                     |
+|---------------|--------|--------------|----------------------------------------------------------|
+| `slug`        | string | Sì           | Identificativo tecnico, conforme alla sezione 2          |
+| `lastUpdated` | string | Sì           | ISO `YYYY-MM-DD` dell'ultima modifica significativa      |
+| `status`      | enum   | Sì           | `full` o `scaffold`                                      |
 
-**Regole sulla severity degli antiPatterns.**
+**Campi della skill** (struttura completa documentata in `skills/ai-component-metadata/SKILL.md`).
 
-- `critical` — viola una regola fondamentale del DS, va sempre corretto. Genera un errore nel check.
-- `warning` — è probabilmente sbagliato ma può avere eccezioni legittime. Genera un avviso.
-- `suggestion` — è una raccomandazione di miglioramento, non una violazione. Genera una nota informativa.
-
-**Valori ammessi per `category`.**
-
-- `atoms` — elementi base non ulteriormente scomponibili (Button, Text, Icon, Input)
-- `molecules` — combinazioni semplici di atoms (Card, Chip, FormField, ListItem)
-- `organisms` — componenti complessi che compongono molecules e atoms (Header, Form, Table, Modal)
-
-**Valori ammessi per `type`.**
-
-- `interactive` — risponde all'interazione utente (Button, Toggle, Slider)
-- `display` — mostra informazioni senza interazione diretta (Badge, Avatar, Tag)
-- `container` — contiene e organizza altri componenti (Card, Modal, Sheet)
-- `input` — raccoglie dati dall'utente (TextField, Select, Checkbox)
-- `navigation` — gestisce la navigazione tra schermate o sezioni (Tab Bar, Bottom Nav, Breadcrumb)
+| Campo                            | Tipo            | Obbligatorio | Note                                                                 |
+|----------------------------------|-----------------|--------------|----------------------------------------------------------------------|
+| `component.name`                 | string          | Sì           | Nome leggibile del componente                                        |
+| `component.category`             | enum            | Sì           | `atoms`, `molecules`, `organisms`                                    |
+| `component.description`          | string          | Sì se `full` | Descrizione breve in 1 frase                                         |
+| `component.type`                 | enum            | Sì           | `interactive`, `display`, `container`, `input`, `navigation`        |
+| `usage.useCases[]`               | array di string | Sì se `full` | Casi d'uso semantici, almeno 1 per componenti `full`                 |
+| `usage.requiredProps[]`          | array di string | No           | Props obbligatorie da passare sempre                                 |
+| `usage.commonPatterns[]`         | array di object | No           | Pattern d'uso comuni con `name`, `description`, `composition`        |
+| `usage.antiPatterns[]`           | array di object | No           | Con `scenario`, `reason`, `alternative`                              |
+| `composition.slots`              | object          | No           | Slot/subcomponenti con `required` e `description`                    |
+| `composition.nestedComponents[]` | array di string | No           | Componenti figli usati internamente                                  |
+| `composition.commonPartners[]`   | array di string | No           | Componenti con cui viene spesso combinato                            |
+| `composition.parentConstraints[]`| array di string | No           | Vincoli di posizionamento                                            |
+| `behavior.states[]`              | array di string | No           | Stati interattivi supportati                                         |
+| `behavior.interactions`          | object          | No           | Chiave → descrizione comportamento (click, hover, focus, space…)    |
+| `behavior.responsive`            | object          | No           | Chiavi: `mobile`, `tablet`, `desktop`. Valore: stringa descrittiva  |
+| `accessibility.role`             | string          | No           | Ruolo ARIA                                                           |
+| `accessibility.keyboardSupport`  | string          | No           | Descrizione del supporto keyboard                                    |
+| `accessibility.screenReader`     | string          | No           | Comportamento con screen reader                                      |
+| `accessibility.focusManagement`  | string          | No           | Strategia di gestione del focus                                      |
+| `accessibility.wcag`             | string          | No           | Livello WCAG (`AA`, `AAA`)                                           |
+| `aiHints.priority`               | enum            | No           | `high`, `medium`, `low`                                              |
+| `aiHints.keywords[]`             | array di string | No           | Keyword che triggerano l'uso di questo componente                    |
+| `aiHints.context`                | string          | No           | Quando l'AI deve scegliere questo componente                         |
 
 ---
 
@@ -414,12 +385,12 @@ Un componente in stato `scaffold` ha la struttura prevista dallo schema ma il co
 
 - Tutti i file (`metadata.json`, `rationale-note.md`, `changelog.md`) esistono
 - Il frontmatter di `rationale-note.md` è compilato
-- Il `metadata.json` contiene i campi obbligatori a livello root (`component`, `slug`, `lastUpdated`, `status: scaffold`, `category`, `type`) e gli array `useCases` e `antiPatterns` vuoti
+- Il `metadata.json` contiene i campi di repo-level (`slug`, `lastUpdated`, `status: scaffold`) e i campi della skill (`component.name`, `component.category`, `component.type`) con gli array `useCases` e `antiPatterns` vuoti
 - Il `changelog.md` contiene **solo il frontmatter YAML** (`component`, `figma_id`, `last_updated`); il plugin Changelog Master appende le entry quando il team DS registra le prime modifiche
 
 **Cosa deve esserci in più in un componente `full`.**
 
-- `metadata.json` completamente compilato, inclusi `description`, almeno 1 `useCases[]` e `behavior`
+- `metadata.json` completamente compilato, inclusi `component.description`, almeno 1 `useCases[]`, `behavior` e `accessibility`
 - `rationale-note.md` compilato con contenuto reale, niente TODO residui
 - Idealmente almeno 1 elemento in `usage.antiPatterns[]`
 - Le immagini Do/Don't sono presenti e referenziate nel testo
@@ -450,4 +421,4 @@ In caso di modifiche, aggiornare la versione e aggiungere una nota nel `CHANGELO
 
 ---
 
-*SCHEMA v2.0 — Consolidamento della documentazione in `metadata.json`. I file `purpose-usage.md` e `behavior.md` sono stati rimossi: tutte le informazioni su scopo, utilizzo e comportamento vivono ora nel JSON strutturato. Rimane solo `rationale-note.md` per i contenuti discorsivi (decisioni di design, eccezioni, storia).*
+*SCHEMA v2.1 — Schema `metadata.json` allineato alla skill AI Component Metadata (`skills/ai-component-metadata`). La struttura JSON segue esattamente il formato della skill; i soli campi aggiuntivi sono `slug`, `lastUpdated` e `status` (necessari per il tooling della repo).*

@@ -49,19 +49,18 @@ function buildIndexEntry(slug, metadata) {
   if (!metadata) return null;
 
   // Estrae i campi rilevanti per l'index, mantenendolo leggero
+  // N.B. `component` è ora un oggetto con name, category, description, type
   return {
     slug: metadata.slug || slug,
-    component: metadata.component || slug,
+    component: metadata.component?.name || slug,
+    category: metadata.component?.category || null,
+    type: metadata.component?.type || null,
+    description: metadata.component?.description || null,
     status: metadata.status || 'unknown',
-    version: metadata.version || null,
     lastUpdated: metadata.lastUpdated || null,
-    category: metadata.category || null,
-    type: metadata.type || null,
-    description: metadata.description || null,
-    useCases: (metadata.usage?.useCases || []).map(uc => uc.name),
+    useCases: (metadata.usage?.useCases || []),
     antiPatternsCount: (metadata.usage?.antiPatterns || []).length,
-    variantsCount: (metadata.variants || []).length,
-    relatedComponents: (metadata.relatedComponents || []).map(r => r.slug)
+    commonPatternsCount: (metadata.usage?.commonPatterns || []).length
   };
 }
 
