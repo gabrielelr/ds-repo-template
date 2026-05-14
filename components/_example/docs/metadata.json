@@ -1,0 +1,51 @@
+{
+  "component": "",
+  "slug": "",
+  "version": "",
+  "lastUpdated": "",
+  "status": "scaffold",
+  "category": "",
+  "type": "",
+  "description": "",
+
+  "usage": {
+    "useCases": [],
+    "antiPatterns": []
+  },
+
+  "variants": [],
+
+  "behavior": {
+    "states": [],
+    "interactions": {
+      "tap": "",
+      "swipe": "",
+      "keyboard": ""
+    },
+    "animations": "",
+    "platforms": {
+      "mobile": [],
+      "tablet": [],
+      "desktop": []
+    },
+    "accessibility": {
+      "role": "",
+      "requiredLabel": false,
+      "keyboardSupport": [],
+      "screenReader": ""
+    }
+  },
+
+  "composition": {
+    "nestedComponents": [],
+    "commonPartners": [],
+    "parentConstraints": []
+  },
+
+  "aiHints": {
+    "contextMapping": {},
+    "commonQuestions": []
+  },
+
+  "relatedComponents": []
+}
