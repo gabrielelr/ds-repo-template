@@ -14,22 +14,20 @@ Ogni componente vive in una cartella sotto `components/`, identificata dal propr
 components/
 └── {slug}/
     └── docs/
-        ├── purpose-usage.md       Obbligatorio
-        ├── behavior.md            Obbligatorio
+        ├── metadata.json          Obbligatorio
         ├── rationale-note.md      Obbligatorio
         ├── changelog.md           Obbligatorio (sincronizzato da Changelog Master)
-        ├── metadata.json          Obbligatorio
         └── images/                Obbligatoria, può essere vuota
             └── *.png
 ```
 
 **Regole.**
 
-- I nomi dei file sono fissi e case-sensitive: `purpose-usage.md`, non `purpose.md` né `Purpose-Usage.md`.
-- Tutti i file (quattro Markdown + un JSON) esistono sempre, anche per i componenti in stato `scaffold`.
+- I nomi dei file sono fissi e case-sensitive: `metadata.json`, `rationale-note.md`, `changelog.md`.
+- Tutti i file esistono sempre, anche per i componenti in stato `scaffold`.
 - La cartella `images/` esiste sempre. Se vuota, contiene un file `.gitkeep` per essere versionata da Git.
 - Niente sottocartelle dentro `docs/` oltre a `images/`.
-- Il file `changelog.md` non viene mai modificato a mano: è sincronizzato automaticamente dal plugin Changelog Master di Figma (vedi sezione 5).
+- Il file `changelog.md` non viene mai modificato a mano: è sincronizzato automaticamente dal plugin Changelog Master di Figma (vedi sezione 4).
 
 **File aggiuntivi consentiti** (non gestiti dagli script automatici, ma utili al team):
 
@@ -83,88 +81,29 @@ Lo script di estrazione del node tree (in fase di check) consulta `aliases.json`
 
 ---
 
-## 3. Frontmatter dei Markdown
+## 3. `rationale-note.md` — Perché è così
 
-Ogni file Markdown inizia con un blocco YAML racchiuso tra `---`. Il frontmatter è la fonte di verità per i metadati, anche più del contenuto del file.
+Risponde alle domande: *"Perché è progettato in questo modo? Quali decisioni di design ci sono dietro? Quali eccezioni esistono?"*
 
-**Esempio in cima a `purpose-usage.md`.**
+**Frontmatter.**
 
 ```yaml
 ---
 slug: button
-section: purpose-usage
 component: Button
-version: 1.0.0
 lastUpdated: 2026-05-09
 status: full
 ---
-
-# Button
-
-Il button è...
 ```
 
-**Campi obbligatori.**
-
-| Campo         | Tipo   | Valori ammessi                                         |
-|---------------|--------|--------------------------------------------------------|
-| `slug`        | string | Slug del componente, conforme alla sezione 2           |
-| `section`     | enum   | `purpose-usage`, `behavior`, `rationale-note`          |
-| `component`   | string | Nome leggibile del componente                          |
+| Campo         | Tipo   | Valori ammessi                                           |
+|---------------|--------|----------------------------------------------------------|
+| `slug`        | string | Slug del componente, conforme alla sezione 2             |
+| `component`   | string | Nome leggibile del componente                            |
 | `lastUpdated` | string | Data ISO `YYYY-MM-DD` dell'ultima modifica significativa |
-| `status`      | enum   | `full` o `scaffold`                                    |
+| `status`      | enum   | `full` o `scaffold`                                      |
 
-**Campi opzionali.**
-
-| Campo     | Tipo   | Note                                                |
-|-----------|--------|-----------------------------------------------------|
-| `version` | string | Semver del componente nel design system             |
-| `author`  | string | Chi ha scritto la sezione (utile in team grandi)    |
-| `reviewer`| string | Chi ha validato la documentazione                   |
-
-**Regole.**
-
-- `lastUpdated` si aggiorna a ogni modifica di contenuto, non a ogni commit.
-- Quando un componente passa da `scaffold` a `full`, lo `status` va aggiornato in tutti e tre i Markdown.
-- Lo `slug` nel frontmatter deve corrispondere al nome della cartella che contiene il file.
-
----
-
-## 4. Contenuto dei tre file Markdown
-
-I tre file coprono ognuno un aspetto diverso del componente. La separazione non è opzionale: serve a tenere distinte le informazioni di tipo diverso, in modo che il sistema di chat possa recuperare la sezione giusta in base alla domanda.
-
-### 4.1 `purpose-usage.md` — A cosa serve, quando si usa
-
-Risponde alle domande: *"Cos'è questo componente? Quando lo uso? Quando NON lo uso?"*
-
-**Sezioni interne.**
-
-- `## Cos'è` — definizione in 1-2 frasi
-- `## Quando usarlo` — casi d'uso espliciti, in elenco descrittivo
-- `## Quando NON usarlo` — anti-pattern, ognuno con motivo e alternativa
-- `## Varianti` — elenco delle varianti del componente con la regola di scelta tra loro
-- `## Esempi visivi` — riferimenti alle immagini nella cartella `images/`, con descrizione testuale di ogni esempio
-
-**Regola critica.** Ogni immagine Do/Don't presente in `images/` deve essere accompagnata da almeno una frase descrittiva nel testo. Una documentazione che mostra un Don't solo come immagine è incompleta — l'immagine non viene letta dall'LLM.
-
-### 4.2 `behavior.md` — Come si comporta
-
-Risponde alle domande: *"Come reagisce all'interazione? Quali stati ha? Come cambia tra dispositivi?"*
-
-**Sezioni interne.**
-
-- `## Stati` — elenco degli stati interattivi (default, hover, pressed, disabled, focus, loading, error)
-- `## Interazioni` — comportamento al tap, swipe, keyboard, eventuali gesture specifiche
-- `## Animazioni` — transizioni e tempi, se rilevanti
-- `## Responsive` — comportamento su mobile, tablet, desktop (se applicabile)
-- `## Accessibilità` — ruolo ARIA, label richieste, comportamento con screen reader, gestione focus
-
-**Regola.** Le specifiche visive precise (pixel, colori esatti, font-size) **non** vanno qui. Stanno in Figma. Qui va il *comportamento*, non la *resa visiva*.
-
-### 4.3 `rationale-note.md` — Perché è così
-
-Risponde alle domande: *"Perché è progettato in questo modo? Quali decisioni di design ci sono dietro? Quali eccezioni esistono?"*
+Campi opzionali: `version` (semver), `author`, `reviewer`.
 
 **Sezioni interne.**
 
@@ -173,11 +112,11 @@ Risponde alle domande: *"Perché è progettato in questo modo? Quali decisioni d
 - `## Note storiche` — evoluzione del componente, deprecazioni, migrazioni
 - `## Componenti correlati` — link ad altri componenti che interagiscono con questo, con relazione esplicita ("usato dentro X", "alternativa a Y", "compone Z")
 
-**Regola.** Questo file è il più "discorsivo" dei tre. Serve sia ai designer (per capire il *perché*) sia agli LLM (per disambiguare casi d'uso simili a partire dal contesto storico/progettuale).
+**Regola.** Questo file è il più "discorsivo". Serve sia ai designer (per capire il *perché*) sia agli LLM (per disambiguare casi d'uso simili a partire dal contesto storico/progettuale).
 
 ---
 
-## 5. `changelog.md` — Storico delle modifiche del componente
+## 4. `changelog.md` — Storico delle modifiche del componente
 
 Il file `changelog.md` traccia l'evoluzione del componente nel tempo: nuove varianti, modifiche comportamentali, fix, deprecazioni. È sincronizzato automaticamente dal plugin **Changelog Master** di Figma e non va mai modificato a mano.
 
@@ -187,7 +126,7 @@ Il file `changelog.md` traccia l'evoluzione del componente nel tempo: nuove vari
 2. All'interno del plugin Changelog Master, il team DS registra la modifica indicando tipo, descrizione, autore ed eventuale progetto/revisore
 3. La modifica entra nella **Sync Queue** del plugin, dove può essere ancora corretta o cancellata prima dell'invio
 4. Al sync, il plugin scrive l'aggiornamento al file `components/{slug}/docs/changelog.md` della repo, in append rispetto allo storico precedente, e aggiorna il campo `last_updated` del frontmatter
-5. Eventuali documenti correlati (`purpose-usage.md`, `behavior.md`, `metadata.json`) vanno aggiornati a mano dal team UX se la modifica impatta la documentazione
+5. Eventuali documenti correlati (`rationale-note.md`, `metadata.json`) vanno aggiornati a mano dal team UX se la modifica impatta la documentazione
 
 Il path template del plugin è configurabile dalle impostazioni; per questa repo è `components/{component}/docs/changelog.md`, dove `{component}` viene risolto sostituendo lo slug del frame Figma (es. `"Icon Button"` → `"icon-button"`).
 
@@ -244,9 +183,9 @@ last_updated: 2026-04-27
 
 ---
 
-## 6. Struttura del `metadata.json`
+## 5. Struttura del `metadata.json`
 
-Il `metadata.json` è la versione strutturata della stessa informazione contenuta nei Markdown. È quello che alimenta il sistema di check di aderenza e che viene caricato dall'LLM quando deve dare risposte precise sulle regole.
+Il `metadata.json` è la fonte di verità strutturata per ogni componente. Contiene tutte le informazioni su cosa è il componente, quando usarlo, come si comporta e come è composto. È quello che alimenta il sistema di check di aderenza, la generazione dell'`index.json` e il contesto caricato dall'LLM per rispondere alle domande sul DS.
 
 **Schema di riferimento completo.**
 
@@ -257,6 +196,9 @@ Il `metadata.json` è la versione strutturata della stessa informazione contenut
   "version": "1.0.0",
   "lastUpdated": "2026-05-09",
   "status": "full",
+  "category": "atoms",
+  "type": "interactive",
+  "description": "Il Button è l'elemento che avvia un'azione. Si usa per confermare, inviare, proseguire o eseguire operazioni all'interno di un flusso.",
 
   "usage": {
     "useCases": [
@@ -291,6 +233,12 @@ Il `metadata.json` è la versione strutturata della stessa informazione contenut
 
   "behavior": {
     "states": ["default", "hover", "pressed", "disabled", "focus", "loading"],
+    "interactions": {
+      "tap": "Avvia l'azione immediatamente al rilascio del tap.",
+      "swipe": "Non applicabile.",
+      "keyboard": "Enter e Space attivano l'azione; Tab sposta il focus al prossimo elemento interattivo."
+    },
+    "animations": "Transizione di colore al cambio di stato (default → hover → pressed) in 150ms ease-out. Lo stato loading mostra uno spinner centrato nel button.",
     "platforms": {
       "mobile": [
         "Touch target minimo 44x44pt",
@@ -299,13 +247,24 @@ Il `metadata.json` è la versione strutturata della stessa informazione contenut
       "tablet": [
         "Touch target minimo 44x44pt",
         "Bottom navigation: layout flex row con padding orizzontale aumentato"
+      ],
+      "desktop": [
+        "Hover state attivo",
+        "Width auto in base al contenuto, mai full-width salvo contesti specifici"
       ]
     },
     "accessibility": {
       "role": "button",
       "requiredLabel": true,
-      "keyboardSupport": ["Enter", "Space"]
+      "keyboardSupport": ["Enter", "Space"],
+      "screenReader": "Il testo del button deve essere autoesplicativo senza il contesto visivo. Evitare label generiche come 'Clicca qui'."
     }
+  },
+
+  "composition": {
+    "nestedComponents": ["icon", "spinner"],
+    "commonPartners": ["button-group", "form"],
+    "parentConstraints": ["Non deve essere figlio diretto di un altro button."]
   },
 
   "aiHints": {
@@ -322,42 +281,50 @@ Il `metadata.json` è la versione strutturata della stessa informazione contenut
 
   "relatedComponents": [
     { "slug": "button-group", "relation": "compone" },
-    { "slug": "icon-button", "relation": "alternativa-per-azioni-icona-only" },
-    { "slug": "link", "relation": "alternativa-per-navigazione" }
+    { "slug": "icon-button", "relation": "alternativa-a" },
+    { "slug": "link", "relation": "alternativa-a" }
   ]
 }
 ```
 
 **Specifica dei campi.**
 
-| Campo                           | Tipo            | Obbligatorio | Note                                                                          |
-|---------------------------------|-----------------|--------------|-------------------------------------------------------------------------------|
-| `component`                     | string          | Sì           | Nome leggibile                                                                |
-| `slug`                          | string          | Sì           | Conforme alla sezione 2                                                       |
-| `version`                       | string          | No           | Semver                                                                        |
-| `lastUpdated`                   | string          | Sì           | ISO `YYYY-MM-DD`                                                              |
-| `status`                        | enum            | Sì           | `full` o `scaffold`                                                           |
-| `usage.useCases[]`              | array di object | Sì se `full` | Almeno 1 elemento per componenti `full`                                       |
-| `usage.useCases[].name`         | string          | Sì           | Titolo del caso d'uso, max 80 caratteri                                       |
-| `usage.useCases[].description`  | string          | Sì           | Descrizione discorsiva del caso d'uso                                         |
-| `usage.useCases[].example`      | string          | No           | Esempio concreto                                                              |
-| `usage.antiPatterns[]`          | array di object | No           | Può essere vuoto, ma più ne ha più il check è efficace                        |
-| `usage.antiPatterns[].scenario` | string          | Sì           | Descrizione della violazione                                                  |
-| `usage.antiPatterns[].reason`   | string          | Sì           | Spiegazione del perché è sbagliato                                            |
-| `usage.antiPatterns[].alternative`| string         | Sì           | Cosa fare al suo posto                                                        |
-| `usage.antiPatterns[].severity` | enum            | Sì           | `critical`, `warning`, `suggestion`                                           |
-| `variants[]`                    | array di object | No           | Solo se il componente ha varianti formali                                     |
-| `variants[].name`               | string          | Sì           | Nome della variante come definita nel DS                                      |
-| `variants[].whenToUse`          | string          | Sì           | Regola di scelta della variante                                               |
-| `variants[].whenNotToUse`       | string          | Sì           | Quando NON sceglierla                                                         |
-| `behavior.states[]`             | array di string | No           | Stati interattivi supportati                                                  |
-| `behavior.platforms`            | object          | No           | Chiavi: `mobile`, `tablet`, `desktop`. Valori: array di regole comportamentali |
-| `behavior.accessibility`        | object          | No           | `role`, `requiredLabel`, `keyboardSupport[]`                                  |
-| `aiHints.contextMapping`        | object          | No           | Mappa contesti d'uso → regole specifiche, utile al sistema di chat            |
-| `aiHints.commonQuestions[]`     | array di string | No           | Domande tipiche, usate per migliorare il routing nelle query LLM              |
-| `relatedComponents[]`           | array di object | No           | Link ad altri componenti                                                      |
-| `relatedComponents[].slug`      | string          | Sì           | Slug del componente correlato                                                 |
-| `relatedComponents[].relation`  | string          | Sì           | Tipo di relazione: `compone`, `composto-da`, `alternativa-a`, `usato-dentro`  |
+| Campo                               | Tipo              | Obbligatorio | Note                                                                           |
+|-------------------------------------|-------------------|--------------|--------------------------------------------------------------------------------|
+| `component`                         | string            | Sì           | Nome leggibile                                                                 |
+| `slug`                              | string            | Sì           | Conforme alla sezione 2                                                        |
+| `version`                           | string            | No           | Semver                                                                         |
+| `lastUpdated`                       | string            | Sì           | ISO `YYYY-MM-DD`                                                               |
+| `status`                            | enum              | Sì           | `full` o `scaffold`                                                            |
+| `category`                          | enum              | Sì           | `atoms`, `molecules`, `organisms`                                              |
+| `type`                              | enum              | Sì           | `interactive`, `display`, `container`, `input`, `navigation`                  |
+| `description`                       | string            | Sì se `full` | Definizione del componente in 1-2 frasi. Risponde a "Cos'è?"                  |
+| `usage.useCases[]`                  | array di object   | Sì se `full` | Almeno 1 elemento per componenti `full`                                        |
+| `usage.useCases[].name`             | string            | Sì           | Titolo del caso d'uso, max 80 caratteri                                        |
+| `usage.useCases[].description`      | string            | Sì           | Descrizione discorsiva del caso d'uso                                          |
+| `usage.useCases[].example`          | string            | No           | Esempio concreto                                                               |
+| `usage.antiPatterns[]`              | array di object   | No           | Può essere vuoto, ma più ne ha più il check è efficace                         |
+| `usage.antiPatterns[].scenario`     | string            | Sì           | Descrizione della violazione                                                   |
+| `usage.antiPatterns[].reason`       | string            | Sì           | Spiegazione del perché è sbagliato                                             |
+| `usage.antiPatterns[].alternative`  | string            | Sì           | Cosa fare al suo posto                                                         |
+| `usage.antiPatterns[].severity`     | enum              | Sì           | `critical`, `warning`, `suggestion`                                            |
+| `variants[]`                        | array di object   | No           | Solo se il componente ha varianti formali                                      |
+| `variants[].name`                   | string            | Sì           | Nome della variante come definita nel DS                                       |
+| `variants[].whenToUse`              | string            | Sì           | Regola di scelta della variante                                                |
+| `variants[].whenNotToUse`           | string            | Sì           | Quando NON sceglierla                                                          |
+| `behavior.states[]`                 | array di string   | No           | Stati interattivi supportati                                                   |
+| `behavior.interactions`             | object            | No           | Chiavi: `tap`, `swipe`, `keyboard`. Testo libero che descrive il comportamento |
+| `behavior.animations`               | string            | No           | Descrizione delle transizioni e dei tempi                                      |
+| `behavior.platforms`                | object            | No           | Chiavi: `mobile`, `tablet`, `desktop`. Valori: array di regole comportamentali |
+| `behavior.accessibility`            | object            | No           | `role`, `requiredLabel`, `keyboardSupport[]`, `screenReader`                   |
+| `composition.nestedComponents[]`    | array di string   | No           | Slug dei componenti interni usati in questo componente                         |
+| `composition.commonPartners[]`      | array di string   | No           | Slug dei componenti con cui viene spesso combinato                             |
+| `composition.parentConstraints[]`   | array di string   | No           | Regole su dove questo componente può o non può essere inserito                 |
+| `aiHints.contextMapping`            | object            | No           | Mappa contesti d'uso → regole specifiche, utile al sistema di chat             |
+| `aiHints.commonQuestions[]`         | array di string   | No           | Domande tipiche, usate per migliorare il routing nelle query LLM               |
+| `relatedComponents[]`               | array di object   | No           | Link ad altri componenti                                                       |
+| `relatedComponents[].slug`          | string            | Sì           | Slug del componente correlato                                                  |
+| `relatedComponents[].relation`      | string            | Sì           | `compone`, `composto-da`, `alternativa-a`, `usato-dentro`                      |
 
 **Regole sulla severity degli antiPatterns.**
 
@@ -365,9 +332,23 @@ Il `metadata.json` è la versione strutturata della stessa informazione contenut
 - `warning` — è probabilmente sbagliato ma può avere eccezioni legittime. Genera un avviso.
 - `suggestion` — è una raccomandazione di miglioramento, non una violazione. Genera una nota informativa.
 
+**Valori ammessi per `category`.**
+
+- `atoms` — elementi base non ulteriormente scomponibili (Button, Text, Icon, Input)
+- `molecules` — combinazioni semplici di atoms (Card, Chip, FormField, ListItem)
+- `organisms` — componenti complessi che compongono molecules e atoms (Header, Form, Table, Modal)
+
+**Valori ammessi per `type`.**
+
+- `interactive` — risponde all'interazione utente (Button, Toggle, Slider)
+- `display` — mostra informazioni senza interazione diretta (Badge, Avatar, Tag)
+- `container` — contiene e organizza altri componenti (Card, Modal, Sheet)
+- `input` — raccoglie dati dall'utente (TextField, Select, Checkbox)
+- `navigation` — gestisce la navigazione tra schermate o sezioni (Tab Bar, Bottom Nav, Breadcrumb)
+
 ---
 
-## 7. Naming delle immagini
+## 6. Naming delle immagini
 
 Le immagini in `components/{slug}/docs/images/` seguono un naming convenzionale che permette agli script di identificarle automaticamente.
 
@@ -400,70 +381,73 @@ modal-confirmation-dont-2.png → Modal variante confirmation, anti-pattern #2
 - Risoluzione minima: 800px sul lato lungo
 - Formato preferito: PNG su sfondo trasparente o sfondo che riproduce la canvas reale
 - Peso massimo per file: 500 KB (oltre, comprimere o ridurre risoluzione)
-- Nessun watermark, nessuna annotazione visiva sovrapposta — le note vanno nel testo del Markdown
+- Nessun watermark, nessuna annotazione visiva sovrapposta — le note vanno nel testo del `rationale-note.md`
+
+**Riferimenti alle immagini nel testo.**
+
+Ogni immagine Do/Don't presente in `images/` deve essere referenziata e descritta nel `metadata.json` (in `usage.antiPatterns` o `usage.useCases`) oppure in `rationale-note.md`. Un'immagine senza descrizione testuale è invisibile all'LLM.
 
 ---
 
-## 8. File a livello di repo
+## 7. File a livello di repo
 
 Oltre alle cartelle dei singoli componenti, la repo contiene questi file alla radice:
 
-| File              | Generato | Scopo                                                                  |
-|-------------------|----------|------------------------------------------------------------------------|
-| `README.md`       | Manuale  | Introduzione alla repo e istruzioni di utilizzo                        |
-| `SCHEMA.md`       | Manuale  | Questo documento                                                       |
-| `WRITING-GUIDE.md`| Manuale  | Guida alla scrittura dei Markdown per il team UX                       |
-| `inventory.md`    | Manuale  | Inventario di tutti i componenti del DS, con stato di documentazione   |
-| `aliases.json`    | Manuale  | Mappa di nomi alternativi → slug canonici                              |
+| File              | Generato   | Scopo                                                                  |
+|-------------------|------------|------------------------------------------------------------------------|
+| `README.md`       | Manuale    | Introduzione alla repo e istruzioni di utilizzo                        |
+| `SCHEMA.md`       | Manuale    | Questo documento                                                       |
+| `WRITING-GUIDE.md`| Manuale    | Guida alla scrittura di `rationale-note.md` per il team UX             |
+| `inventory.md`    | Manuale    | Inventario di tutti i componenti del DS, con stato di documentazione   |
+| `aliases.json`    | Manuale    | Mappa di nomi alternativi → slug canonici                              |
 | `index.json`      | Automatico | Indice strutturato di tutti i componenti, generato dalla GitHub Action |
 
 `index.json` viene rigenerato a ogni push su `main` da una GitHub Action. Non va mai modificato a mano.
 
 ---
 
-## 9. Stato `scaffold` vs `full`
+## 8. Stato `scaffold` vs `full`
 
 Un componente in stato `scaffold` ha la struttura prevista dallo schema ma il contenuto è incompleto. Serve a tracciare nell'inventario quali componenti sono ancora da documentare in profondità.
 
 **Cosa deve esserci in un componente `scaffold`.**
 
-- Tutti i file (Markdown + JSON) esistono
-- Il frontmatter dei tre Markdown principali è compilato (slug, section, component, lastUpdated, `status: scaffold`)
-- I tre Markdown principali contengono almeno un titolo H1 e i nomi delle sezioni previste, con commenti `<!-- TODO: ... -->` per indicare cosa manca
-- Il `metadata.json` contiene i campi obbligatori a livello root (`component`, `slug`, `version`, `lastUpdated`, `status: scaffold`) e gli array `useCases` e `antiPatterns` vuoti
+- Tutti i file (`metadata.json`, `rationale-note.md`, `changelog.md`) esistono
+- Il frontmatter di `rationale-note.md` è compilato
+- Il `metadata.json` contiene i campi obbligatori a livello root (`component`, `slug`, `lastUpdated`, `status: scaffold`, `category`, `type`) e gli array `useCases` e `antiPatterns` vuoti
 - Il `changelog.md` contiene **solo il frontmatter YAML** (`component`, `figma_id`, `last_updated`); il plugin Changelog Master appende le entry quando il team DS registra le prime modifiche
 
 **Cosa deve esserci in più in un componente `full`.**
 
-- Tutti i Markdown sono compilati con contenuto reale, niente TODO residui
-- `metadata.json` ha almeno 1 elemento in `usage.useCases[]`
-- Idealmente almeno 1 elemento in `usage.antiPatterns[]` (la qualità del check di aderenza dipende dalla loro completezza)
+- `metadata.json` completamente compilato, inclusi `description`, almeno 1 `useCases[]` e `behavior`
+- `rationale-note.md` compilato con contenuto reale, niente TODO residui
+- Idealmente almeno 1 elemento in `usage.antiPatterns[]`
 - Le immagini Do/Don't sono presenti e referenziate nel testo
 
 **Transizione da scaffold a full.**
 
 Quando un componente viene completato:
 
-1. Compilare tutti i campi mancanti dei Markdown e del JSON
-2. Aggiornare `status: scaffold` → `status: full` in tutti i Markdown e nel JSON
+1. Compilare tutti i campi mancanti di `metadata.json` e di `rationale-note.md`
+2. Aggiornare `status: scaffold` → `status: full` nel JSON e nel frontmatter del Markdown
 3. Aggiornare `lastUpdated` con la data corrente
-4. Eseguire la pipeline di conversione per validare la consistenza tra Markdown e JSON
+4. Eseguire la pipeline di conversione per validare la consistenza
 5. Commit con messaggio convenzionale: `docs({slug}): promote to full`
 
 ---
 
-## 10. Versioning dello schema
+## 9. Versioning dello schema
 
 Questo schema può evolvere. Quando viene modificato in modo non retrocompatibile (campi obbligatori aggiunti, campi rinominati, struttura cambiata), va incrementata la versione dello schema e va comunicata la modifica.
 
 La versione corrente dello schema è documentata qui:
 
 ```
-SCHEMA_VERSION: 1.0
+SCHEMA_VERSION: 2.0
 ```
 
 In caso di modifiche, aggiornare la versione e aggiungere una nota nel `CHANGELOG.md` della repo template.
 
 ---
 
-*SCHEMA v1.0 — Bozza iniziale per il sistema di documentazione design system Conflux. Validare e iterare sui primi 2-3 componenti reali del DS Cross-App prima di considerarlo definitivo.*
+*SCHEMA v2.0 — Consolidamento della documentazione in `metadata.json`. I file `purpose-usage.md` e `behavior.md` sono stati rimossi: tutte le informazioni su scopo, utilizzo e comportamento vivono ora nel JSON strutturato. Rimane solo `rationale-note.md` per i contenuti discorsivi (decisioni di design, eccezioni, storia).*
