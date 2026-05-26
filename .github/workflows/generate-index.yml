@@ -1,40 +1,43 @@
 name: Generate index
 
-# Quando si attiva questo workflow
 on:
-  # A ogni push su main
   push:
     branches:
       - main
-    # Si attiva solo se sono cambiati file rilevanti
     paths:
-      - 'components/**'
+      - 'components/**/metadata.json'
+      - 'scripts/build_index.py'
+      - 'skills/codebase-index/scripts/index_codebase.py'
       - '.github/workflows/generate-index.yml'
-  # Permette di lanciare il workflow manualmente
   workflow_dispatch:
 
 jobs:
-  generate-index-dry-run:
+  generate-index:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write  # Necessario per committare index.toon
+
     steps:
-      # 1. Scarica il codice della repo nell'ambiente della Action
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      # 2. Setup Node.js (versione 20 LTS)
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
-          node-version: '20'
+          python-version: '3.12'
 
-      # 3. Genera l'index.json e lo stampa nei log
-      - name: Generate index (dry-run)
-        run: node .github/scripts/generate-index.js
+      - name: Build index.toon
+        run: python scripts/build_index.py
 
-      # 4. Riepilogo finale
-      - name: Summary
+      - name: Commit index.toon if changed
         run: |
-          echo "Workflow eseguito in modalità dry-run."
-          echo "L'index.json NON è stato committato. Vedi i log dello step precedente per il contenuto."
-          echo "Per attivare la scrittura su file, aggiornare il workflow al task 22 della checklist."
+          git config user.name "DS Index Bot"
+          git config user.email "bot@ds-index.noreply"
+          if git diff --quiet index.toon; then
+            echo "index.toon non è cambiato — nessun commit"
+          else
+            git add index.toon
+            git commit -m "chore: rigenera index.toon"
+            git push
+          fi

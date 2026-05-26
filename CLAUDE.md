@@ -21,13 +21,14 @@ Knowledge base del **Design System `<nome del tuo DS>`**, target platform `<es. 
 Quando avvii una sessione su questa repo, **leggi i file in questo ordine** prima di fare qualsiasi cosa:
 
 1. **Questo file (`CLAUDE.md`)** — regole e processo (lo stai leggendo)
-2. **`SCHEMA.md`** — schema del `metadata.json` dei componenti
-3. **`page-patterns/SCHEMA-PATTERN.md`** — schema del `composition.json` dei page-pattern
-4. **`page-patterns/README.md`** — indice di tutti i page-pattern disponibili
-5. **Il `pattern.md` + `composition.json` del page-pattern coinvolto** — SOLO quando devi comporre/recensire una schermata di una specifica tipologia
-6. **I `metadata.json` dei singoli componenti coinvolti** — SOLO quando devi entrare nei dettagli di uno specifico componente
+2. **`index.toon`** — overview di tutti i componenti in ~4k token (slug, name, type, status, useCases, antiPattern aggregati, dependency graph). **Per la maggior parte delle domande sul DS questo basta.** Aprilo come secondo file, sempre.
+3. **`SCHEMA.md`** — schema del `metadata.json` dei componenti (solo se devi creare/modificare un componente)
+4. **`page-patterns/SCHEMA-PATTERN.md`** — schema del `composition.json` dei page-pattern
+5. **`page-patterns/README.md`** — indice di tutti i page-pattern disponibili
+6. **Il `pattern.md` + `composition.json` del page-pattern coinvolto** — SOLO quando devi comporre/recensire una schermata di una specifica tipologia
+7. **I `metadata.json` dei singoli componenti coinvolti** — SOLO se hai bisogno di dettagli che `index.toon` non contiene (composition completa, behavior states, accessibility, rationale)
 
-Non leggere tutti i metadata in apertura — è spreco di context. Leggi on-demand.
+**Regola di efficienza.** `index.toon` è generato automaticamente da `scripts/build_index.py` ad ogni push e aggrega i campi essenziali di tutti i `metadata.json`. Non leggere i metadata individualmente per rispondere a domande di overview ("esiste il componente X?", "quali sono gli antiPattern di Y?", "quali componenti compongono Z?") — `index.toon` ha già quelle risposte. Apri il `metadata.json` del singolo solo per dettagli profondi.
 
 ---
 
