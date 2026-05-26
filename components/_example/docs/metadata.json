@@ -2,34 +2,31 @@
   "slug": "",
   "lastUpdated": "",
   "status": "scaffold",
-
+  "platforms": [],
+  "figmaNodeIds": {},
   "component": {
     "name": "",
     "category": "atoms",
     "description": "",
     "type": "interactive"
   },
-
   "usage": {
     "useCases": [],
     "requiredProps": [],
     "commonPatterns": [],
     "antiPatterns": []
   },
-
   "composition": {
     "slots": {},
     "nestedComponents": [],
     "commonPartners": [],
     "parentConstraints": []
   },
-
   "behavior": {
     "states": [],
     "interactions": {},
     "responsive": {}
   },
-
   "accessibility": {
     "role": "",
     "keyboardSupport": "",
@@ -37,10 +34,12 @@
     "focusManagement": "",
     "wcag": "AA"
   },
-
   "aiHints": {
     "priority": "medium",
     "keywords": [],
     "context": ""
+  },
+  "rationale": {
+    "designDecisions": ""
   }
 }

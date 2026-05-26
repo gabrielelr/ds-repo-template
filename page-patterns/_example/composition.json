@@ -1,0 +1,24 @@
+{
+  "$schema": "../SCHEMA-PATTERN.md",
+  "slug": "_example",
+  "name": "Example Page Pattern",
+  "status": "scaffold",
+  "ownedBy": "UX team",
+  "lastUpdated": "",
+  "description": "",
+  "useCases": [],
+  "categories": [],
+  "platforms": [],
+  "slots": {},
+  "rules": {
+    "maxPrimaryCTA": 1,
+    "maxCardHighlight": 1,
+    "maxCardEntrypoint": 1,
+    "allowedNudgeCardHierarchy": [],
+    "customRules": []
+  },
+  "antiPatterns": [],
+  "commonPartners": [],
+  "compositionExamples": [],
+  "rationale": ""
+}

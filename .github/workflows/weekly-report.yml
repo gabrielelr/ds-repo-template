@@ -1,0 +1,36 @@
+name: Weekly DS Report
+
+on:
+  schedule:
+    - cron: '0 8 * * 5'  # Ogni venerdì alle 9:00 CET (8:00 UTC)
+  workflow_dispatch:       # Trigger manuale per testare senza aspettare il venerdì
+
+jobs:
+  generate-report:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write  # Necessario per creare il tag report-*
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Serve la storia completa per il git diff
+
+      - name: Configura git (per il tag finale)
+        run: |
+          git config user.name "DS Bot"
+          git config user.email "bot@ds.noreply"
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Esegui script report
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          DS_NAME: "Design System"   # personalizza con il nome del tuo DS
+        run: python scripts/generate_report.py
