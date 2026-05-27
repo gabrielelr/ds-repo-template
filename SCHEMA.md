@@ -4,7 +4,7 @@ Questo documento definisce la struttura della documentazione per ogni componente
 
 Tutte le regole qui descritte sono **vincolanti**. Una documentazione che non rispetta lo schema non viene processata correttamente dagli strumenti automatici (pipeline di conversione, generazione `index.json`, modalità di chat e check).
 
-> **Origine dello schema.** Le sezioni base del `metadata.json` (`component`, `usage`, `composition`, `behavior`, `accessibility`, `aiHints`) sono definite dalla skill **`ai-component-metadata`** (in `skills/ai-component-metadata/`). Questo file estende quello schema con campi specifici del progetto (`slug`, `lastUpdated`, `status`, `platforms`, `figmaNodeIds`, `rationale`). Per documentare un componente nuovo, parti dal template della skill (`skills/ai-component-metadata/assets/metadata-template.tsx`) e aggiungi i campi project-specific definiti qui.
+> **Origine dello schema.** Le sezioni base del `metadata.json` (`component`, `usage`, `composition`, `behavior`, `accessibility`, `aiHints`) sono definite dalla skill **`ai-component-metadata`** (in `skills/ai-component-metadata/`). Questo file estende quello schema con campi specifici del progetto (`slug`, `lastUpdated`, `status`, `platforms`, `figmaNodeIds`, `content`, `rationale`). Per documentare un componente nuovo, parti dal template della skill (`skills/ai-component-metadata/assets/metadata-template.tsx`) e aggiungi i campi project-specific definiti qui.
 
 ---
 
@@ -241,6 +241,16 @@ Lo schema del `metadata.json` segue il formato della skill **AI Component Metada
     }
   },
 
+  "content": {
+    "maxLines": { "label": 1 },
+    "characterLimits": { "label": 20 },
+    "overflow": "ellipsis",
+    "rules": [
+      "Button label: max 20 characters, always 1 line",
+      "If label exceeds 20 chars, truncate with ellipsis instead of wrapping"
+    ]
+  },
+
   "accessibility": {
     "role": "button",
     "keyboardSupport": "Full keyboard navigation with Space/Enter activation",
@@ -330,6 +340,10 @@ Quando un componente esiste su tutte e tre, va elencato in tutte e tre le chiavi
 | `behavior.states[]`              | array di string | No           | Stati interattivi supportati                                         |
 | `behavior.interactions`          | object          | No           | Chiave → descrizione comportamento (click, hover, focus, space…)    |
 | `behavior.responsive`            | object          | No           | Chiavi: `mobile`, `tablet`, `desktop`. Valore: stringa descrittiva  |
+| `content.maxLines`               | object          | No           | Mappa elemento-testo → max linee (es. `{"title": 2, "label": 1}`)   |
+| `content.characterLimits`        | object          | No           | Mappa elemento-testo → max caratteri (es. `{"label": 20}`)          |
+| `content.overflow`               | string          | No           | `ellipsis` / `clamp` / `scroll` / `none` / `mixed`                  |
+| `content.rules`                  | array di string | No           | Regole free-text non esprimibili con i campi sopra                  |
 | `accessibility.role`             | string          | No           | Ruolo ARIA                                                           |
 | `accessibility.keyboardSupport`  | string          | No           | Descrizione del supporto keyboard                                    |
 | `accessibility.screenReader`     | string          | No           | Comportamento con screen reader                                      |
@@ -411,9 +425,11 @@ Oltre alle cartelle dei singoli componenti, la repo contiene questi file alla ra
 | `WRITING-GUIDE.md`| Manuale    | Guida alla scrittura del blocco `rationale` del `metadata.json` per il team UX |
 | `inventory.md`    | Manuale    | Inventario di tutti i componenti del DS, con stato di documentazione        |
 | `aliases.json`    | Manuale    | Mappa di nomi alternativi → slug canonici                                   |
-| `index.json`      | Automatico | Indice strutturato di tutti i componenti, generato dalla GitHub Action      |
+| `index.toon`      | Automatico | Indice TOON aggregato di tutti i componenti (token-efficient, ~5k token), generato dalla GitHub Action |
 
-`index.json` viene rigenerato a ogni push su `main` da una GitHub Action. Non va mai modificato a mano.
+`index.toon` viene rigenerato a ogni push su `main` da una GitHub Action ([`.github/workflows/generate-index.yml`](.github/workflows/generate-index.yml)). Lo script ([`scripts/build_index.py`](scripts/build_index.py)) aggrega `slug/name/category/type/status/lastUpdated` di ogni componente, gli antiPattern globali, e il dependencyGraph (`composition.nestedComponents`). **Non va mai modificato a mano** — è output derivato.
+
+**Perché TOON e non JSON.** TOON è ~40-70% più compatto di JSON sugli stessi dati (formato tabular con header dichiarativo invece di chiavi ripetute), e l'accuracy LLM sul recupero dati è leggermente più alta. Per la doc-repo questo significa caricare tutti i 60+ componenti in un singolo file da ~5k token invece di leggere 60 metadata.json (~200k token). Dettagli in [`skills/codebase-index/SKILL.md`](skills/codebase-index/SKILL.md).
 
 ---
 
