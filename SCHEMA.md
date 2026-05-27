@@ -355,7 +355,51 @@ Quando un componente esiste su tutte e tre, va elencato in tutte e tre le chiavi
 
 ---
 
-## 5. Naming delle immagini
+## 5. Mapping da template Figma dei designer → `metadata.json`
+
+I designer documentano spesso un componente su due frame Figma ricorrenti: **`Purpose & Usage`** (cosa è, quando usarlo, anti-pattern) e **`Behavior`** (interazioni, dimensioni, copy/truncation, do/don't tecnici). Questa sezione definisce la mappa univoca *sezione del frame → campo dello schema*, in modo che un agente AI possa estrarre il JSON dai paragrafi del frame senza ambiguità.
+
+### Tabella di mapping
+
+| Frame template | Sezione del frame | Campo target nel `metadata.json` |
+|---|---|---|
+| **Purpose & Usage** | Header *"Component name / variant"* | `component.name` + slug della cartella |
+| **Purpose & Usage** | **1.1 How and when to use it (Do ✅)** — descrizione 2-3 frasi | `usage.commonPatterns[].when` |
+| **Purpose & Usage** | 1.1 — "In which component / template / flow is it used?" | `usage.commonPatterns[].composition` (o `composition.commonPartners[]` se sono solo nomi di altri componenti) |
+| **Purpose & Usage** | 1.1 — screenshot Do | riferimento `figmaNodeIds` (link al frame esemplificativo) |
+| **Purpose & Usage** | **1.2 Anti-pattern (Don't ❌)** — *Rule* | `usage.antiPatterns[].scenario` |
+| **Purpose & Usage** | 1.2 — *Why it's wrong* | `usage.antiPatterns[].reason` |
+| **Purpose & Usage** | 1.2 — *Use instead* | `usage.antiPatterns[].alternative` |
+| **Purpose & Usage** | 1.2 — screenshot Don't | riferimento `figmaNodeIds` o note |
+| **Behavior** | Interactive elements (cosa è tappabile e cosa succede) | `behavior.interactions` |
+| **Behavior** | Position (dove appare nel layout) | `composition.parentConstraints[]` |
+| **Behavior** | Animation (tipo + durata) | `behavior.interactions` (nota descrittiva) |
+| **Behavior** | Size (min/max + touch target) | `behavior.responsive.*` — chiavi dipendono dal DS, vedi sotto "Template multi-DS" — o `parentConstraints` (touch target) |
+| **Behavior** | Conditional logic | `behavior.interactions` (chiavi tipo `if:formInvalid → button.disabled`) |
+| **Behavior** | Copy & truncation | `content` (`maxLines` / `characterLimits` / `overflow` / `rules`) |
+| **Behavior** | Do / Don't / Note locali (per OS o responsive) | confluiscono in `usage.commonPatterns[]` / `usage.antiPatterns[]` / `rationale.designDecisions` |
+
+L'intera sezione **1.1** del Purpose tipicamente diventa **una entry** in `usage.commonPatterns[]`. Se i designer ne aggiungono più (1.1.A, 1.1.B), una entry per ciascuna. Stesso per **1.2** in `usage.antiPatterns[]`.
+
+### Template multi-DS: app vs web
+
+Lo stesso template Figma viene usato dai designer sia per componenti di un **DS mobile-native (app)** sia per componenti di un **DS responsive (web)**. Le colonne nel frame Behavior cambiano in base al contesto, e l'agente deve riconoscerlo **prima** di mappare:
+
+- **Componente del DS mobile-native** → il template ha **tre colonne `iOS` / `Android` / `iOS Liquid Glass`** allineate alle `platforms` del DS. Mapping 1:1: ogni colonna va sulla chiave omonima di `behavior.responsive` (`responsive.ios`, `responsive.android`, `responsive.ios-liquid-glass`). Se una colonna è vuota, l'agente lascia la chiave vuota e segnala il gap (non inventa).
+- **Componente del DS web** → il template ha **due colonne `Mobile` / `Desktop`** (responsive web). Mapping 1:1 su `responsive.mobile` / `responsive.desktop`.
+
+Se la repo che stai documentando ha `platforms: ["android", "ios", "ios-liquid-glass"]` (mobile-native), un frame con colonne `Mobile/Desktop` va trattato come **scope mismatch a livello di repo**: appartiene al DS web parallelo, non a questa repo. L'agente lo segnala e non mappa.
+
+### Punti d'attenzione operativi
+
+- **Tag "FOR DEVELOPER / FOR DESIGNER"** in cima ai frame — è semantica del workflow Figma, non va nel JSON.
+- **Screenshot Do/Don't vuoti** (solo etichetta, niente immagine) = template non compilato → l'agente si ferma e segnala, non inventa contenuto per riempire.
+- **Hex literals** scritti dai designer (es. `#5fa747`) → l'agente chiede il nome del token invece di accettarli (regola R2 di `CLAUDE.md`).
+- **Status non promosso automaticamente** — anche con tutti i campi popolati, lo `status` resta `scaffold` finché l'UX team non lo promuove esplicitamente a `full` (regola R3).
+
+---
+
+## 6. Naming delle immagini
 
 Le immagini in `components/{slug}/docs/images/` usano un naming numerico che funge anche da **identificatore univoco** referenziabile dal `metadata.json`.
 
@@ -414,7 +458,7 @@ Un'immagine **deve** comparire come ID `N.M` almeno una volta nel `metadata.json
 
 ---
 
-## 6. File a livello di repo
+## 7. File a livello di repo
 
 Oltre alle cartelle dei singoli componenti, la repo contiene questi file alla radice:
 
@@ -433,7 +477,7 @@ Oltre alle cartelle dei singoli componenti, la repo contiene questi file alla ra
 
 ---
 
-## 7. Stato `scaffold` vs `full`
+## 8. Stato `scaffold` vs `full`
 
 Un componente in stato `scaffold` ha la struttura prevista dallo schema ma il contenuto è incompleto. Serve a tracciare nell'inventario quali componenti sono ancora da documentare in profondità.
 
@@ -462,7 +506,7 @@ Quando un componente viene completato:
 
 ---
 
-## 8. Versioning dello schema
+## 9. Versioning dello schema
 
 Questo schema può evolvere. Quando viene modificato in modo non retrocompatibile (campi obbligatori aggiunti, campi rinominati, struttura cambiata), va incrementata la versione dello schema e va comunicata la modifica.
 

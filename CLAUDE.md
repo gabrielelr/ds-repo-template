@@ -125,7 +125,9 @@ Se esiste un template ready-to-use specifico per il contesto (es. `Card Product 
 
 ## Processo: documentare un nuovo componente
 
-Lo schema del `metadata.json` è definito dalla skill **`ai-component-metadata`** (in `skills/ai-component-metadata/`) — il nostro `SCHEMA.md` ne è la versione estesa con campi aggiuntivi (`figmaNodeIds`, `lastUpdated`, `platforms`, `status`). Usala come template di partenza.
+Lo schema del `metadata.json` è definito dalla skill **`ai-component-metadata`** (in `skills/ai-component-metadata/`) — il nostro `SCHEMA.md` ne è la versione estesa con campi aggiuntivi (`figmaNodeIds`, `lastUpdated`, `platforms`, `status`, `content`). Usala come template di partenza.
+
+Se i designer ti consegnano un frame Figma con la spec già scritta (template `Purpose & Usage` + `Behavior`), **la mappa univoca *sezione del frame → campo dello schema* è in [`SCHEMA.md` §5](SCHEMA.md)** — include anche la regola di riconoscimento template multi-DS (colonne app `iOS/Android/Liquid Glass` vs colonne web `Mobile/Desktop`) e i punti d'attenzione operativi.
 
 1. **Fetch dati Figma**: `get_metadata`, `get_design_context`, `get_variable_defs`, `get_screenshot`
 2. **Crea `components/<slug>/docs/metadata.json`**:
